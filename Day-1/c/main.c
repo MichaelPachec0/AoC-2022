@@ -7,7 +7,7 @@
 
 int part_1();
 
-int HandleLongToInt(char *value);
+int HandleLongToInt(const char * value);
 
 int main() {
     int part1 = part_1();
@@ -37,9 +37,7 @@ int part_1() {
     while (fgets(line, sizeof(line), input)) {
         tmp = HandleLongToInt(line);
         if (tmp == 0) {
-            if (cur_cal > max_cal) {
-                max_cal = cur_cal;
-            }
+            max_cal = (cur_cal > max_cal) * cur_cal + (cur_cal < max_cal) * max_cal;
             cur_cal = 0;
         }
         cur_cal += tmp;
@@ -50,14 +48,10 @@ int part_1() {
 }
 
 
-int HandleLongToInt(char *value) {
+int HandleLongToInt(const char * const value) {
     char *err;
     long tmp = strtol(value, &err, 10);
-    if (strlen(err) != 1 || tmp > INT_MAX || tmp < INT_MIN || errno) {
-        // actual errors, we account for the newline in err, which also works nicely for empty
-        // lines, assume that elves won't think to carry 0 calorie food (all food contains
-        // calories right? then it would not be food right?, right?)
-        return 0;
-    }
-    return (int) tmp;
+    int ret = !(strlen(err) != 1 || tmp > INT_MAX || tmp < INT_MIN || errno) *
+            (int) tmp;
+    return ret;
 }
