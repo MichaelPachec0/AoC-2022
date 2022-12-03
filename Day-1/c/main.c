@@ -3,18 +3,20 @@
 #include <string.h>
 #include <limits.h>
 #include <stdlib.h>
-
+#include <time.h>
 
 int part_1();
 
-int HandleLongToInt(const char * value);
+int HandleLongToInt(const char *value);
+
+double time_it(int (*action)(int));
 
 int main() {
-    int part1 = part_1();
-    if (part1 == -1) {
-        return -1;
-    }
-    fprintf(stdout, "The answer for part 1 is %d\n", part1);
+    double time_func = time_it(&part_1);
+    // The function returns time in seconds, convert it microseconds.
+    fprintf(stdout, "The time taken to run function is %fμs", time_func * 1.0E6);
+    return 0;
+
 }
 
 int part_1() {
@@ -44,14 +46,37 @@ int part_1() {
     }
 
     fclose(input);
-    return max_cal;
+    fprintf(stdout, "The answer for part 1 is %d\n", max_cal);
+    return 0;
 }
 
 
-int HandleLongToInt(const char * const value) {
+int HandleLongToInt(const char *const value) {
     char *err;
     long tmp = strtol(value, &err, 10);
     int ret = !(strlen(err) != 1 || tmp > INT_MAX || tmp < INT_MIN || errno) *
-            (int) tmp;
+              (int) tmp;
     return ret;
+}
+
+#ifdef CLOCK_PROCESS_CPUTIME_ID
+/* cpu time in the current process */
+#define CLOCKTYPE  CLOCK_PROCESS_CPUTIME_ID
+#else
+/* this one should be appropriate to avoid errors on multiprocessors systems */
+#define CLOCKTYPE  CLOCK_MONOTONIC
+#endif
+
+
+double time_it(int (*action)(int)) {
+    struct timespec tsi;
+    struct timespec tsf;
+
+    clock_gettime(CLOCKTYPE, &tsi);
+    action(0);
+    clock_gettime(CLOCKTYPE, &tsf);
+
+    double elapsed_s = difftime(tsf.tv_sec, tsi.tv_sec);
+    long elapsed_ns = tsf.tv_nsec - tsi.tv_nsec;
+    return elapsed_s + ((double) elapsed_ns) / 1.0e9;
 }
