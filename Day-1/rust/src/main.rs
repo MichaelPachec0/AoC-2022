@@ -15,9 +15,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut max_cal: i32 = 0;
 
 
-    for line in buf.lines() {
-        max_cal = line_handler(line?, &mut cur_cal, max_cal);
-    }
+    buf.lines().into_iter().for_each(|line| {
+        max_cal = line_handler(line.unwrap(), &mut cur_cal, max_cal)
+    });
     println!("The answer for Day 1 part 1 is {max_cal}");
     let duration: Duration = start.elapsed();
     println!("Time elapsed is: {duration:?}");
