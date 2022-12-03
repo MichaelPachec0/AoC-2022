@@ -11,6 +11,9 @@ int HandleLongToInt(char *value);
 
 int main() {
     int part1 = part_1();
+    if (part1 == -1) {
+        return -1;
+    }
     fprintf(stdout, "The answer for part 1 is %d\n", part1);
 }
 
@@ -20,9 +23,16 @@ int part_1() {
     const char *const filename = "../../input.txt";
     int max_cal = 0;
     int cur_cal = 0;
-    FILE *input = fopen(filename, "r");
     char line[512];
     int tmp;
+
+    FILE *input = fopen(filename, "r");
+
+
+    if (input == NULL) {
+        fprintf(stderr, "FILE WAS NOT READ\nERR: %s\n", strerror(errno));
+        return -1;
+    }
 
     while (fgets(line, sizeof(line), input)) {
         tmp = HandleLongToInt(line);
@@ -34,9 +44,8 @@ int part_1() {
         }
         cur_cal += tmp;
     }
-    if (input != NULL) {
-        fclose(input);
-    }
+
+    fclose(input);
     return max_cal;
 }
 
