@@ -15,7 +15,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut max_cal: i32 = 0;
 
 
-    buf.lines().into_iter().for_each(|line| {
+    buf.lines().for_each(|line| {
         max_cal = line_handler(line.unwrap(), &mut cur_cal, max_cal)
     });
     println!("The answer for Day 1 part 1 is {max_cal}");
@@ -25,12 +25,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn line_handler(line: String, cur: &mut i32, max: i32) -> i32 {
-    if line.len() == 0 {
+    if line.len() != 0 {
+        *cur += line.parse::<i32>().unwrap_or(0);
+        max
+    } else {
         let tmp: i32 = *cur;
         *cur = 0;
         (tmp > max) as i32 * tmp + (tmp < max) as i32 * max
-    } else {
-        *cur = *cur + line.parse().unwrap_or(0);
-        max
     }
 }
