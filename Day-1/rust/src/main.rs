@@ -4,7 +4,6 @@ use std::time::{Duration, Instant};
 
 // Answer for part 1 is 71124. For part 2 its 204639
 
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let start: Instant = Instant::now();
     let path = "../input.txt";
@@ -25,12 +24,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-
 fn line_handler(line: String, cur: &mut i32, max: i32) -> i32 {
     if line.len() == 0 {
         let tmp: i32 = *cur;
         *cur = 0;
-        if tmp > max { tmp } else { max }
+        (tmp > max) as i32 * tmp + (tmp < max) as i32 * max
     } else {
         *cur = *cur + line.parse().unwrap_or(0);
         max
