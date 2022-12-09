@@ -43,7 +43,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         score += outcomes[line.as_str()];
     }
     let duration = start.elapsed();
-    println!("The scokire for the player using the guide is {score}");
+    println!("The score for the player using the guide is {score}");
     println!("Time elapsed {duration:?}");
     Ok(())
 }
