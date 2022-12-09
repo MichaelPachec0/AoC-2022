@@ -1,0 +1,12 @@
+// 3 (draw) (Rock) + 1 (picked Rock)
+A X:4
+// 6 (win) (Rock) + 2 (picked Paper)
+A Y:8
+// 0 (loss) (Rock) + 3 (picked Scissors)
+A Z:3
+B X:1
+B Y:5
+B Z:9
+C X:7
+C Y:2
+C Z:6
