@@ -35,9 +35,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut score: i32 = 0;
 
     for line in buf.lines() {
-        let line = line.unwrap_or(String::from("//"));
+        let line = line.unwrap_or(String::from(""));
         // let outcome = line.split(" ").collect::<Vec<&str>>();
-        if line.contains("//") {
+        if line.is_empty() {
             continue;
         }
         score += outcomes[line.as_str()];
