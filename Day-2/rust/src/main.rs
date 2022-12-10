@@ -63,7 +63,8 @@ fn reader<'a>(path: &'a str, pattern: Option<&'a str>) -> impl Iterator<Item = S
         .lines()
         .into_iter()
         .map(|line: Result<String, _>| line.unwrap_or_default())
-        // the filter below should not consume the String being passed down, instead use a reference
+        // the filter below should not consume the String being passed down, instead use a reference,
+        // what does need to be consumed is the pattern variable.
         .filter(move |line: &String| !(line.is_empty() || line.contains(pattern.unwrap_or("//"))))
 }
 
