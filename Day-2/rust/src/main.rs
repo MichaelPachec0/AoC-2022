@@ -12,9 +12,12 @@ fn main() {
     let input = reader("../input.txt", None).collect::<Vec<String>>();
     let outcomes = outcomes();
     let p1_score = part_1(&outcomes);
+    let p1_score = part_1(&outcomes, &input);
     let p1_duration = start.elapsed();
     println!("The score for the player using the guide is {p1_score}");
     println!("Time elapsed {p1_duration:?}");
+    let conditions = win_lose();
+
 }
 
 fn reader_helper(path: &str) -> BufReader<File> {
@@ -30,9 +33,12 @@ fn outcomes() -> HashMap<String, i32> {
             .map(|(outcome, score)| (outcome, i32::from_str_radix(score.as_str(), 10).unwrap_or(0)))
             .collect::<Vec<(String, i32)>>()
     )
-    // for (outcome, score) in _test_map("outcomes.txt") {
-    //
-    // }
+}
+fn win_lose() -> HashMap<String, String> {
+    HashMap::from_iter(_test_map("part2.txt", ":")
+        .into_iter()
+        .collect::<Vec<(String, String)>>()
+    )
 }
 // Need to set lifetimes since the compiler needs to be certain that the variable references being
 // sent are valid until the end of the function's execution. This is because we do a move ownership
