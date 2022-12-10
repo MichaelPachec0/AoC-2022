@@ -16,7 +16,7 @@ fn main() {
     println!("Time elapsed {p1_duration:?}");
 }
 
-fn reader(path: &str) -> BufReader<File> {
+fn reader_helper(path: &str) -> BufReader<File> {
     // I am fine with it panic'ing here, all of the code depends on these lines
     // TODO: might figure out later a better way to refactor this code.
     let input = File::open(path).unwrap();
@@ -58,7 +58,15 @@ fn part_1(choices: &HashMap<String, i32>) -> i32 {
     // (0 if you lost, 3 if the round was a draw, and 6 if you won).
     // already precompiled all outcomes
 
-    let mut score: i32 = 0;
+fn reader<'a>(path: &'a str, pattern: Option<&'a str>) -> impl Iterator<Item = String> + 'a {
+    reader_helper(path)
+        .lines()
+        .into_iter()
+        .map(|line: Result<String, _>| line.unwrap_or_default())
+        // the filter below should not consume the String being passed down, instead use a reference
+        .filter(move |line: &String| !(line.is_empty() || line.contains(pattern.unwrap_or("//"))))
+}
+
 
     for line in reader("../input.txt").lines() {
         let line = line.unwrap_or(String::from(""));
