@@ -24,7 +24,7 @@ fn reader(path: &str) -> BufReader<File> {
 }
 fn outcomes() -> HashMap<String, i32> {
     HashMap::from_iter(
-        _test_map("outcomes.txt")
+        _test_map("outcomes.txt", ":")
             .into_iter()
             .map(|(outcome, score)| (outcome, i32::from_str_radix(score.as_str(), 10).unwrap_or(0)))
             .collect::<Vec<(String, i32)>>()
@@ -34,14 +34,17 @@ fn outcomes() -> HashMap<String, i32> {
     // }
 }
 
-fn _test_map(path: &str, ) -> impl Iterator<Item = (String, String)> {
+fn _test_map<'a>(path: &'a str, delimiter: &'a str) -> impl Iterator<Item = (String, String)> + 'a {
     reader(path)
         .lines()
         .into_iter()
         .map(|line: Result<String, _>| line.unwrap_or(String::from("")))
+        // the filter below should not consume the String being passed down, instead use a reference
         .filter(|line_ref: &String| !(line_ref.contains("//") || line_ref.is_empty()))
-        .map(|line: String| {
-            let mut vec = line.split(":").map(|item| String::from(item));
+        // in order for the closure to have access to delimiter, we need a move here, even if its a
+        // a &str
+        .map(move |line: String| {
+            let mut vec = line.split(delimiter).map(String::from);
             // .collect::<Vec<String, String>>();
             // TODO: Do some error handling here.
             (vec.next().unwrap_or_default(), vec.next().unwrap_or_default())
