@@ -9,6 +9,7 @@ use std::{
 
 fn main() {
     let start: Instant = Instant::now();
+    let input = reader("../input.txt", None).collect::<Vec<String>>();
     let outcomes = outcomes();
     let p1_score = part_1(&outcomes);
     let p1_duration = start.elapsed();
@@ -33,19 +34,15 @@ fn outcomes() -> HashMap<String, i32> {
     //
     // }
 }
-
+// Need to set lifetimes since the compiler needs to be certain that the variable references being
+// sent are valid until the end of the function's execution. This is because we do a move ownership
 fn _test_map<'a>(path: &'a str, delimiter: &'a str) -> impl Iterator<Item = (String, String)> + 'a {
-    reader(path)
-        .lines()
+    reader(path, None)
         .into_iter()
-        .map(|line: Result<String, _>| line.unwrap_or(String::from("")))
-        // the filter below should not consume the String being passed down, instead use a reference
-        .filter(|line_ref: &String| !(line_ref.contains("//") || line_ref.is_empty()))
         // in order for the closure to have access to delimiter, we need a move here, even if its a
         // a &str
         .map(move |line: String| {
             let mut vec = line.split(delimiter).map(String::from);
-            // .collect::<Vec<String, String>>();
             // TODO: Do some error handling here.
             (vec.next().unwrap_or_default(), vec.next().unwrap_or_default())
         })
