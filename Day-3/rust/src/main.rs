@@ -31,11 +31,11 @@ fn sample() -> i32 {
     let lines: Vec<char> = rucksacks("../sample.txt")
         .flat_map(|(first, second)| {
             let check: HashSet<&u8, RandomState> = HashSet::from_iter(second.as_bytes());
-            return HashSet::<&u8>::from_iter(first.as_bytes())
+            HashSet::<&u8>::from_iter(first.as_bytes())
                 .into_iter()
                 .filter(|char| check.contains(char))
                 .map(|char| (char::from(*char)).to_owned())
-                .collect::<Vec<char>>();
+                .collect::<Vec<char>>()
         })
         .collect();
     for line in lines {
