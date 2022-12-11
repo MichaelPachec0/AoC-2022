@@ -39,17 +39,11 @@ fn part_1() -> i32 {
 fn compute_sum(path: &str) -> i32 {
     rucksacks(path)
         .flat_map(|(first, second)| {
-            println!("FIRST {first} SECOND {second}");
             let check: HashSet<&u8, RandomState> = HashSet::from_iter(second.as_bytes());
             HashSet::<&u8>::from_iter(first.as_bytes())
                 .into_iter()
                 .filter(|char| check.contains(char))
-                // .map(ToOwned::to_owned)
-                .map(|char| {
-                    let ret = char.to_owned();
-                    println!("CHAR NUM: {ret}, as duplicate char {}", char::from(ret));
-                    ret
-                })
+                .map(ToOwned::to_owned)
                 .collect::<Vec<u8>>()
         })
         .fold(0_i32, |acc, char| {
@@ -80,13 +74,7 @@ fn reader<'args_life>(
     reader_helper(path)
         .lines()
         .into_iter()
-        .enumerate()
-        .map(|(number, line)| {
-            let line = line.unwrap_or_else(|_| String::from("BADZ"));
-            println!("LINE: {number} STRING: {line}");
-            line
-            //Result::unwrap_or_default
-        })
+        .map(Result::unwrap_or_default)
         // the filter below should not consume the String being passed down, instead use a reference,
         // what does need to be consumed is the pattern variable.
 
@@ -103,7 +91,7 @@ fn rucksacks(path: &str) -> impl Iterator<Item = (String, String)> + '_ {
         (
             // Did not want to do this, but i guess i have to.
             // Want to see if i can do Box or Rc, instead so that i dont have to do a clone.
-            line.get(..(line.len() / 2) - 1).map_or_else(
+            line.get(..(line.len() / 2)).map_or_else(
                 || panic!("Line: {line} panicked when slicing"),
                 ToOwned::to_owned,
             ),
