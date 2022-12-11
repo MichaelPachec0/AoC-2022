@@ -1,7 +1,6 @@
 //! --- Day 3: Rucksack Reorganization ---
 //! This application solves Day 3 of advent of code.
 
-#![allow(clippy::std_instead_of_alloc)]
 use std::borrow::ToOwned;
 use std::collections::hash_map::RandomState;
 use std::collections::HashSet;
@@ -88,7 +87,7 @@ fn rucksacks(path: &str) -> impl Iterator<Item = (String, String)> + '_ {
     reader(path, None).into_iter().map(|line: String| {
         // Clippy does not know better, integer arithmetic should not be able to be overflowed
         // since we are measuring a size of something.
-        #[allow(clippy::integer_division, clippy::integer_arithmetic)]
+        #[allow(clippy::integer_division)]
         (
             // Did not want to do this, but i guess i have to.
             // Want to see if i can do Box or Rc, instead so that i dont have to do a clone.
