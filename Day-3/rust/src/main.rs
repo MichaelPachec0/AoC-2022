@@ -27,8 +27,11 @@ fn main() {
 
 /// Used for testing the application. Using the sample input, that it will return the correct output.
 fn sample() -> i32 {
-    let mut ret: i32 = 0;
-    let lines: Vec<u8> = rucksacks("../sample.txt")
+    compute_sum("../sample.txt")
+}
+/// This abstracts the most of the work from the
+fn compute_sum(path: &str) -> i32 {
+    rucksacks(path)
         .flat_map(|(first, second)| {
             let check: HashSet<&u8, RandomState> = HashSet::from_iter(second.as_bytes());
             HashSet::<&u8>::from_iter(first.as_bytes())
@@ -37,19 +40,9 @@ fn sample() -> i32 {
                 .map(ToOwned::to_owned)
                 .collect::<Vec<u8>>()
         })
-        .collect();
-    for line in lines {
-        let priority = if line < 90 {
-            i32::from(line - 38)
-        } else {
-            i32::from(line - 96)
-        };
-        ret += priority;
-        let num = line;
-        let line = char::from(line);
-        println!("Duplicate char: {line}, priority: {priority} orig: {num}");
-    }
-    ret
+        .fold(0_i32, |acc, char| {
+            acc + i32::from(char - (if char > 90 { 96 } else { 38 }))
+        })
 }
 
 /// Helper function to return a File Buffer. Used to isolate imperative code from the
