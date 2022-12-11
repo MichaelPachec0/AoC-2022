@@ -1,3 +1,5 @@
+use std::collections::hash_map::RandomState;
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -16,7 +18,24 @@ use std::io::{BufRead, BufReader};
 // Every rucksack will have an even number of items
 
 fn main() {
-    println!("Hello, world!");
+    sample();
+}
+
+fn sample() -> i32 {
+    let lines: Vec<Vec<char>> = rucksacks("../sample.txt")
+        .map(|(first, second)| {
+            let check: HashSet<&u8, RandomState> = HashSet::from_iter(second.as_bytes());
+            HashSet::<&u8>::from_iter(first.as_bytes())
+                .into_iter()
+                .filter(|char| check.contains(char))
+                .map(|char| (*char as char).to_owned())
+                .collect::<Vec<char>>()
+        })
+        .collect();
+    for line in lines {
+        println!("{line:?}");
+    }
+    0
 }
 
 fn reader_helper(path: &str) -> BufReader<File> {
