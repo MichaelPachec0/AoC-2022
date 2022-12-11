@@ -15,10 +15,7 @@ def reader_splitter(path: str, splitter: str = ":") -> Iterator[list[str]]:
 
 
 def part_1(day_input: list[str], outcomes: dict[str: int]) -> int:
-    ret = 0
-    for line in day_input:
-        ret += outcomes[line]
-    return ret
+    return sum(outcomes[line] for line in day_input)
 
 
 def part_2(day_input: list[str], outcomes: dict[str: int], conditions: dict[str: str]) -> int:
