@@ -11,11 +11,10 @@ fn main() {
     let start: Instant = Instant::now();
     let input = reader("../input.txt", None).collect::<Vec<String>>();
     let outcomes = outcomes();
-    let p1_score = part_1(&outcomes);
     let p1_score = part_1(&outcomes, &input);
     let p1_duration = start.elapsed();
     println!("The score for the player using the guide is {p1_score}");
-    println!("Time elapsed {p1_duration:?}");
+    println!("Time elapsed for part 1 is {p1_duration:?}");
     let conditions = win_lose();
 
 }
