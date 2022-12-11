@@ -22,8 +22,8 @@ fn main() {
 }
 
 fn sample() -> i32 {
-    let lines: Vec<Vec<char>> = rucksacks("../sample.txt")
-        .map(|(first, second)| {
+    let lines: Vec<char> = rucksacks("../sample.txt")
+        .flat_map(|(first, second)| {
             let check: HashSet<&u8, RandomState> = HashSet::from_iter(second.as_bytes());
             HashSet::<&u8>::from_iter(first.as_bytes())
                 .into_iter()
