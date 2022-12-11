@@ -15,9 +15,14 @@ fn main() {
     let p1_duration = start.elapsed();
     println!("The score for the player using the guide is {p1_score}");
     println!("Time elapsed for part 1 is {p1_duration:?}");
+    let print_duration = start.elapsed();
     let conditions = win_lose();
     let p2_score = part_2(&outcomes, &conditions, &input);
+    let p2_duration = start.elapsed() - print_duration;
     println!("The score when taking into account part 2 conditions is {p2_score}");
+    println!("Time elapsed for part 2 is {p2_duration:?}");
+    let whole_duration = start.elapsed();
+    println!("The whole app took {whole_duration:?}");
 
 }
 
