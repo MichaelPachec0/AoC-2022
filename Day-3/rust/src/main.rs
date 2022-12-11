@@ -1,3 +1,8 @@
+//! --- Day 3: Rucksack Reorganization ---
+//! This application solves Day 3 of advent of code.
+
+#![allow(clippy::std_instead_of_alloc)]
+use std::borrow::ToOwned;
 use std::collections::hash_map::RandomState;
 use std::collections::HashSet;
 use std::fs::File;
@@ -21,47 +26,71 @@ fn main() {
     sample();
 }
 
+/// Used for testing the application. Using the sample input, that it will return the correct output.
 fn sample() -> i32 {
     let lines: Vec<char> = rucksacks("../sample.txt")
         .flat_map(|(first, second)| {
             let check: HashSet<&u8, RandomState> = HashSet::from_iter(second.as_bytes());
-            HashSet::<&u8>::from_iter(first.as_bytes())
+            return HashSet::<&u8>::from_iter(first.as_bytes())
                 .into_iter()
                 .filter(|char| check.contains(char))
-                .map(|char| (*char as char).to_owned())
-                .collect::<Vec<char>>()
+                .map(|char| (char::from(*char)).to_owned())
+                .collect::<Vec<char>>();
         })
         .collect();
     for line in lines {
-        println!("{line:?}");
+        println!("Duplicate char: {line}");
     }
     0
 }
 
+/// Helper function to return a File Buffer. Used to isolate imperative code from the
+/// codebase
 fn reader_helper(path: &str) -> BufReader<File> {
     // I am fine with it panicking here, all of the code depends on these lines
     // TODO: might figure out later a better way to refactor this code.
-    let input = File::open(path).unwrap();
+    let input = File::open(path).map_or_else(
+        |_| {
+            panic!("File {path} cannot be read");
+        },
+        |x| x,
+    );
     BufReader::new(input)
 }
 
-fn reader<'a>(path: &'a str, pattern: Option<&'a str>) -> impl Iterator<Item = String> + 'a {
+/// Main file opening code path. Written as an generic Iterator (that returns a String for every line)
+/// so that it can be chained with other methods.
+fn reader<'args_life>(
+    path: &'args_life str,
+    pattern: Option<&'args_life str>,
+) -> impl Iterator<Item = String> + 'args_life {
     reader_helper(path)
         .lines()
         .into_iter()
-        .map(|line: Result<String, _>| line.unwrap_or_default())
+        .map(Result::unwrap_or_default)
         // the filter below should not consume the String being passed down, instead use a reference,
         // what does need to be consumed is the pattern variable.
         .filter(move |line: &String| !(line.is_empty() || line.contains(pattern.unwrap_or("//"))))
 }
 
+/// Day 3 specific code, splits the string from reader into a tuple of two Strings, one denoting the
+/// first pocket in the rucksack, same with the second.
 fn rucksacks(path: &str) -> impl Iterator<Item = (String, String)> + '_ {
     reader(path, None).into_iter().map(|line: String| {
+        // Clippy does not know better, integer arithmetic should not be able to be overflowed
+        // since we are measuring a size of something.
+        #[allow(clippy::integer_division, clippy::arithmetic_side_effects, clippy::integer_arithmetic)]
         (
             // Did not want to do this, but i guess i have to.
             // Want to see if i can do Box or Rc, instead so that i dont have to do a clone.
-            line[..((line.len() / 2) - 1)].to_owned(),
-            line[line.len() / 2..].to_owned(),
+            line.get(..(line.len() / 2) - 1).map_or_else(
+                || panic!("Line: {line} panicked when slicing"),
+                ToOwned::to_owned,
+            ),
+            line.get(line.len() / 2..).map_or_else(
+                || panic!("Line: {line} panicked when slicing"),
+                ToOwned::to_owned,
+            ),
         )
     })
 }
