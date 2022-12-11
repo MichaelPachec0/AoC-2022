@@ -31,7 +31,7 @@ fn reader_helper(path: &str) -> BufReader<File> {
 }
 fn outcomes() -> HashMap<String, i32> {
     HashMap::from_iter(
-        _test_map("outcomes.txt", ":")
+        _test_map("../outcomes.txt", ":")
             .into_iter()
             .map(|(outcome, score)| {
                 (
@@ -44,7 +44,7 @@ fn outcomes() -> HashMap<String, i32> {
 }
 fn win_lose() -> HashMap<String, String> {
     HashMap::from_iter(
-        _test_map("part2.txt", ":")
+        _test_map("../part2.txt", ":")
             .into_iter()
             .collect::<Vec<(String, String)>>(),
     )
