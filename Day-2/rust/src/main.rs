@@ -54,12 +54,16 @@ fn _test_map<'a>(path: &'a str, delimiter: &'a str) -> impl Iterator<Item = (Str
         })
 }
 
-fn part_1(choices: &HashMap<String, i32>) -> i32 {
+fn part_1(choices: &HashMap<String, i32>, input: &Vec<String>) -> i32 {
     // The score for a single round is the score for the shape you selected
     // (1 for Rock, 2 for Paper, and 3 for Scissors)
     // plus the score for the outcome of the round
     // (0 if you lost, 3 if the round was a draw, and 6 if you won).
     // already precompiled all outcomes
+        input
+            .iter()
+            .fold(0, |acc, line| acc + choices[line])
+}
 
 fn reader<'a>(path: &'a str, pattern: Option<&'a str>) -> impl Iterator<Item = String> + 'a {
     reader_helper(path)
