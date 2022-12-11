@@ -36,3 +36,13 @@ fn reader<'a>(path: &'a str, pattern: Option<&'a str>) -> impl Iterator<Item = S
         .filter(move |line: &String| !(line.is_empty() || line.contains(pattern.unwrap_or("//"))))
 }
 
+fn rucksacks(path: &str) -> impl Iterator<Item = (String, String)> + '_ {
+    reader(path, None).into_iter().map(|line: String| {
+        (
+            // Did not want to do this, but i guess i have to.
+            // Want to see if i can do Box or Rc, instead so that i dont have to do a clone.
+            line[..((line.len() / 2) - 1)].to_owned(),
+            line[line.len() / 2..].to_owned(),
+        )
+    })
+}
