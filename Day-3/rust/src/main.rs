@@ -23,25 +23,37 @@ use std::io::{BufRead, BufReader};
 
 fn main() {
     println!("The final score for the sample is {}", sample());
+    println!("The sum of the priorities for part 1 is {}", part_1());
 }
 
 /// Used for testing the application. Using the sample input, that it will return the correct output.
 fn sample() -> i32 {
     compute_sum("../sample.txt")
 }
+/// part 1 of the problem
+fn part_1() -> i32 {
+    compute_sum("../input.txt")
+}
+
 /// This abstracts the most of the work from the
 fn compute_sum(path: &str) -> i32 {
     rucksacks(path)
         .flat_map(|(first, second)| {
+            println!("FIRST {first} SECOND {second}");
             let check: HashSet<&u8, RandomState> = HashSet::from_iter(second.as_bytes());
             HashSet::<&u8>::from_iter(first.as_bytes())
                 .into_iter()
                 .filter(|char| check.contains(char))
-                .map(ToOwned::to_owned)
+                // .map(ToOwned::to_owned)
+                .map(|char| {
+                    let ret = char.to_owned();
+                    println!("CHAR NUM: {ret}, as duplicate char {}", char::from(ret));
+                    ret
+                })
                 .collect::<Vec<u8>>()
         })
         .fold(0_i32, |acc, char| {
-            acc + i32::from(char - (if char > 90 { 96 } else { 38 }))
+            acc + i32::from(char - (if char > 96 { 96 } else { 38 }))
         })
 }
 
@@ -68,9 +80,16 @@ fn reader<'args_life>(
     reader_helper(path)
         .lines()
         .into_iter()
-        .map(Result::unwrap_or_default)
+        .enumerate()
+        .map(|(number, line)| {
+            let line = line.unwrap_or_else(|_| String::from("BADZ"));
+            println!("LINE: {number} STRING: {line}");
+            line
+            //Result::unwrap_or_default
+        })
         // the filter below should not consume the String being passed down, instead use a reference,
         // what does need to be consumed is the pattern variable.
+
         .filter(move |line: &String| !(line.is_empty() || line.contains(pattern.unwrap_or("//"))))
 }
 
