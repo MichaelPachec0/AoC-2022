@@ -23,7 +23,7 @@ fn reader_helper(path: &str) -> BufReader<File> {
     // I am fine with it panicking here, all of the code depends on these lines
     // TODO: might figure out later a better way to refactor this code.
     let input = File::open(path).unwrap();
-    return BufReader::new(input);
+    BufReader::new(input)
 }
 
 fn reader<'a>(path: &'a str, pattern: Option<&'a str>) -> impl Iterator<Item = String> + 'a {
