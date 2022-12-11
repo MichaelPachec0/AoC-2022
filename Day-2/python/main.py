@@ -34,7 +34,7 @@ def main():
     day_input = [line for line in reader("../input.txt")]
     outcomes = {line[0]: int(line[1]) for line in reader_splitter("../outcomes.txt")}
     part_1_score = part_1(day_input, outcomes)
-    print(f"The score for the the player using the guide is {part_1_score}")
+    print(f"The score for the player using the guide is {part_1_score}")
     conditions = {line[0]: line[1] for line in reader_splitter("../part2.txt")}
     part_2_score = part_2(day_input, outcomes, conditions)
     print(f"The score for the player with part 2's conditions in mind is {part_2_score}")
