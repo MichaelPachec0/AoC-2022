@@ -23,11 +23,12 @@ use std::io::{BufRead, BufReader};
 // Every rucksack will have an even number of items
 
 fn main() {
-    sample();
+    println!("The final score for the sample is {}", sample());
 }
 
 /// Used for testing the application. Using the sample input, that it will return the correct output.
 fn sample() -> i32 {
+    let mut ret: i32 = 0;
     let lines: Vec<u8> = rucksacks("../sample.txt")
         .flat_map(|(first, second)| {
             let check: HashSet<&u8, RandomState> = HashSet::from_iter(second.as_bytes());
@@ -39,9 +40,17 @@ fn sample() -> i32 {
         })
         .collect();
     for line in lines {
-        println!("Duplicate char: {line}");
+        let priority = if line < 90 {
+            i32::from(line - 38)
+        } else {
+            i32::from(line - 96)
+        };
+        ret += priority;
+        let num = line;
+        let line = char::from(line);
+        println!("Duplicate char: {line}, priority: {priority} orig: {num}");
     }
-    0
+    ret
 }
 
 /// Helper function to return a File Buffer. Used to isolate imperative code from the
@@ -79,7 +88,7 @@ fn rucksacks(path: &str) -> impl Iterator<Item = (String, String)> + '_ {
     reader(path, None).into_iter().map(|line: String| {
         // Clippy does not know better, integer arithmetic should not be able to be overflowed
         // since we are measuring a size of something.
-        #[allow(clippy::integer_division, clippy::arithmetic_side_effects, clippy::integer_arithmetic)]
+        #[allow(clippy::integer_division, clippy::integer_arithmetic)]
         (
             // Did not want to do this, but i guess i have to.
             // Want to see if i can do Box or Rc, instead so that i dont have to do a clone.
