@@ -87,36 +87,4 @@ fn part_2(outcomes: &HashMap<String, i32>, condition: &HashMap<String, String>, 
         })
         .fold(0, |acc, line| acc + outcomes[&line])
 
-    for line in reader("../input.txt").lines() {
-        let line = line.unwrap_or(String::from(""));
-        // let outcome = line.split(" ").collect::<Vec<&str>>();
-        if line.is_empty() {
-            continue;
-        }
-        score += choices[&line];
-    }
-    score
 }
-
-// fn part_2() {
-//     // X means you need to lose, Y means you need to end the round in a draw, and Z means you need to win.
-//     let mut choice: HashMap<String, String> = HashMap::new();
-//     for line in reader("part2.txt") {
-//         // TODO: abstract this code, maybe return a Hashmap in this case.
-//         let outcome = line
-//             .split(":")
-//             .map(|i| String::from(i))
-//             .collect::<Vec<String>>();
-//         choice.insert(outcome[0].clone(), outcome[1].clone());
-//     }
-//     for line in reader("../input.txt").lines() {
-//         let line = line.unwrap_or(String::from(""));
-//         // let outcome = line.split(" ").collect::<Vec<&str>>();
-//         if line.is_empty() {
-//             continue;
-//         }
-//         let enemy = line.split(" ").collect::<Vec<&str>>()[0];
-//         let p2_choice = choice[&line].as_str();
-//         let integrate = format!("{enemy} {p2_choice}");
-//     }
-// }
