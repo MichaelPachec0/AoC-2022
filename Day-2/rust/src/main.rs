@@ -5,8 +5,6 @@ use std::{
     time::Instant,
 };
 
-// Result<(), Box<dyn std::error::Error>>
-
 fn main() {
     let start: Instant = Instant::now();
     let input = reader("../input.txt", None).collect::<Vec<String>>();
@@ -23,11 +21,10 @@ fn main() {
     println!("Time elapsed for part 2 is {p2_duration:?}");
     let whole_duration = start.elapsed();
     println!("The whole app took {whole_duration:?}");
-
 }
 
 fn reader_helper(path: &str) -> BufReader<File> {
-    // I am fine with it panic'ing here, all of the code depends on these lines
+    // I am fine with it panicking here, all of the code depends on these lines
     // TODO: might figure out later a better way to refactor this code.
     let input = File::open(path).unwrap();
     return BufReader::new(input);
@@ -36,14 +33,20 @@ fn outcomes() -> HashMap<String, i32> {
     HashMap::from_iter(
         _test_map("outcomes.txt", ":")
             .into_iter()
-            .map(|(outcome, score)| (outcome, i32::from_str_radix(score.as_str(), 10).unwrap_or(0)))
-            .collect::<Vec<(String, i32)>>()
+            .map(|(outcome, score)| {
+                (
+                    outcome,
+                    i32::from_str_radix(score.as_str(), 10).unwrap_or(0),
+                )
+            })
+            .collect::<Vec<(String, i32)>>(),
     )
 }
 fn win_lose() -> HashMap<String, String> {
-    HashMap::from_iter(_test_map("part2.txt", ":")
-        .into_iter()
-        .collect::<Vec<(String, String)>>()
+    HashMap::from_iter(
+        _test_map("part2.txt", ":")
+            .into_iter()
+            .collect::<Vec<(String, String)>>(),
     )
 }
 // Need to set lifetimes since the compiler needs to be certain that the variable references being
@@ -56,7 +59,10 @@ fn _test_map<'a>(path: &'a str, delimiter: &'a str) -> impl Iterator<Item = (Str
         .map(move |line: String| {
             let mut vec = line.split(delimiter).map(String::from);
             // TODO: Do some error handling here.
-            (vec.next().unwrap_or_default(), vec.next().unwrap_or_default())
+            (
+                vec.next().unwrap_or_default(),
+                vec.next().unwrap_or_default(),
+            )
         })
 }
 
@@ -66,9 +72,7 @@ fn part_1(choices: &HashMap<String, i32>, input: &Vec<String>) -> i32 {
     // plus the score for the outcome of the round
     // (0 if you lost, 3 if the round was a draw, and 6 if you won).
     // already precompiled all outcomes
-        input
-            .iter()
-            .fold(0, |acc, line| acc + choices[line])
+    input.iter().fold(0, |acc, line| acc + choices[line])
 }
 
 fn reader<'a>(path: &'a str, pattern: Option<&'a str>) -> impl Iterator<Item = String> + 'a {
@@ -81,7 +85,11 @@ fn reader<'a>(path: &'a str, pattern: Option<&'a str>) -> impl Iterator<Item = S
         .filter(move |line: &String| !(line.is_empty() || line.contains(pattern.unwrap_or("//"))))
 }
 
-fn part_2(outcomes: &HashMap<String, i32>, condition: &HashMap<String, String>, input: &Vec<String>) -> i32 {
+fn part_2(
+    outcomes: &HashMap<String, i32>,
+    condition: &HashMap<String, String>,
+    input: &Vec<String>,
+) -> i32 {
     // X means you need to lose, Y means you need to end the round in a draw, and Z means you need to win.
     input
         .iter()
@@ -91,5 +99,4 @@ fn part_2(outcomes: &HashMap<String, i32>, condition: &HashMap<String, String>, 
             format!("{enemy} {choice}")
         })
         .fold(0, |acc, line| acc + outcomes[&line])
-
 }
