@@ -16,6 +16,8 @@ fn main() {
     println!("The score for the player using the guide is {p1_score}");
     println!("Time elapsed for part 1 is {p1_duration:?}");
     let conditions = win_lose();
+    let p2_score = part_2(&outcomes, &conditions, &input);
+    println!("The score when taking into account part 2 conditions is {p2_score}");
 
 }
 
@@ -74,6 +76,16 @@ fn reader<'a>(path: &'a str, pattern: Option<&'a str>) -> impl Iterator<Item = S
         .filter(move |line: &String| !(line.is_empty() || line.contains(pattern.unwrap_or("//"))))
 }
 
+fn part_2(outcomes: &HashMap<String, i32>, condition: &HashMap<String, String>, input: &Vec<String>) -> i32 {
+    // X means you need to lose, Y means you need to end the round in a draw, and Z means you need to win.
+    input
+        .iter()
+        .map(|line| {
+            let enemy = line.split(" ").nth(0).unwrap_or("A");
+            let choice = condition[line].as_str();
+            format!("{enemy} {choice}")
+        })
+        .fold(0, |acc, line| acc + outcomes[&line])
 
     for line in reader("../input.txt").lines() {
         let line = line.unwrap_or(String::from(""));
