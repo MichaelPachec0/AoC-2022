@@ -28,14 +28,14 @@ fn main() {
 
 /// Used for testing the application. Using the sample input, that it will return the correct output.
 fn sample() -> i32 {
-    let lines: Vec<char> = rucksacks("../sample.txt")
+    let lines: Vec<u8> = rucksacks("../sample.txt")
         .flat_map(|(first, second)| {
             let check: HashSet<&u8, RandomState> = HashSet::from_iter(second.as_bytes());
             HashSet::<&u8>::from_iter(first.as_bytes())
                 .into_iter()
                 .filter(|char| check.contains(char))
-                .map(|char| (char::from(*char)).to_owned())
-                .collect::<Vec<char>>()
+                .map(ToOwned::to_owned)
+                .collect::<Vec<u8>>()
         })
         .collect();
     for line in lines {
