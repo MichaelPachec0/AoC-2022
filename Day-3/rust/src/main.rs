@@ -68,9 +68,9 @@ fn reader_helper(path: &str) -> BufReader<File> {
 /// Main file opening code path. Written as an generic Iterator (that returns a String for every line)
 /// so that it can be chained with other methods.
 fn reader<'args_life>(
-    path: &'args_life str,
+    path: &str,
     pattern: Option<&'args_life str>,
-) -> impl Iterator<Item = String> + 'args_life {
+) -> impl Iterator<Item=String> + 'args_life {
     reader_helper(path)
         .lines()
         .into_iter()
@@ -83,7 +83,7 @@ fn reader<'args_life>(
 
 /// Day 3 specific code, splits the string from reader into a tuple of two Strings, one denoting the
 /// first pocket in the rucksack, same with the second.
-fn rucksacks(path: &str) -> impl Iterator<Item = (String, String)> + '_ {
+fn rucksacks(path: &str) -> impl Iterator<Item=(String, String)> + '_ {
     reader(path, None).into_iter().map(|line: String| {
         // Clippy does not know better, integer arithmetic should not be able to be overflowed
         // since we are measuring a size of something.
