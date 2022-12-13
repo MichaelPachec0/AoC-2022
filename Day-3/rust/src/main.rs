@@ -21,16 +21,18 @@ use std::io::{BufRead, BufReader};
 // Every rucksack will have an even number of items
 
 fn main() {
+    let sample = reader("../sample.txt", None).collect::<Vec<String>>();
+    let input = reader("../input.txt", None).collect::<Vec<String>>();
     let sacks = rucksacks("../input.txt").collect::<Vec<(String, String)>>();
 
-    println!("The final score for the sample is {}", sample());
+    println!("The final score for the sample is {}", sample_answer());
     println!("The sum of the priorities for part 1 is {}", part_1(&sacks));
-    println!("With consideration of part 2, the priorities for the sample are {}", part_2_sample());
-    println!("And for the input text, {}", part_2());
+    println!("With consideration of part 2, the priorities for the sample are {}", part_2(&sample));
+    println!("And for the input text, {}", part_2(&input));
 }
 
 /// Used for testing the application. Using the sample input, that it will return the correct output.
-fn sample() -> i32 {
+fn sample_answer() -> i32 {
     compute_sum("../sample.txt")
 }
 
@@ -39,30 +41,22 @@ fn part_1(sacks: &[(String, String)]) -> i32 {
     compute_sum_iter(sacks).fold(0_i32, sum_chars)
 }
 ///
-fn part_2_sample() -> i32 {
-    part_2_compute("../sample.txt").into_iter()
-        .fold(0_i32, sum_chars)
-}
-
-///
-fn part_2() -> i32 {
-    part_2_compute("../input.txt").into_iter()
-        .fold(0_i32, sum_chars)
+fn part_2(data: &[String]) -> i32 {
+    part_2_compute(data).into_iter()
+        .fold(0_i32, |acc, char | sum_chars(acc, *char))
 }
 ///
-fn part_2_compute(path: &str) -> Vec<u8> {
-    let a = reader(path, None).collect::<Vec<String>>();
-    a.chunks(3)
+fn part_2_compute(data: &[String]) -> impl Iterator<Item=&u8>{
+    data.chunks(3)
         .map(|chunk| chunk.iter()
             .map(|i: &String | HashSet::<&u8>::from_iter(i.as_bytes()))
             .collect::<Vec<HashSet<&u8>>>()
         )
         .flat_map(|items| items[0].iter()
             .filter(|char| items[1].contains(**char) && items[2].contains(**char))
-            .map(|char | **char)
-            .collect::<Vec<u8>>()
+            .copied()
+            .collect::<Vec<&u8>>()
         )
-        .collect::<Vec<u8>>()
 }
 
 /// Abstract the iterator, this time we return an iterator, so that it can be generically applied to
@@ -72,10 +66,9 @@ fn compute_sum_iter(sacks: &[(String, String)]) -> impl Iterator<Item=u8> + '_ {
         .flat_map(sacks_flat_map)
 }
 /// Multiple functions are calling this to compute the final priorities, abstract this.
-fn sum_chars(acc: i32, char: u8) -> i32 {
+fn sum_chars(acc: i32,  char: u8) -> i32 {
     acc + i32::from(char - (if char > 96 { 96 } else { 38 }))
 }
-
 
 
 /// Abstract the `flat_map` iterator, since its going to be called from multiple places
