@@ -2,7 +2,6 @@
 //! This application solves Day 3 of advent of code.
 
 use std::borrow::ToOwned;
-use std::collections::hash_map::RandomState;
 use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -22,33 +21,51 @@ use std::io::{BufRead, BufReader};
 // Every rucksack will have an even number of items
 
 fn main() {
+    let sacks = rucksacks("../input.txt").collect::<Vec<(String, String)>>();
+
     println!("The final score for the sample is {}", sample());
-    println!("The sum of the priorities for part 1 is {}", part_1());
+    println!("The sum of the priorities for part 1 is {}", part_1(&sacks));
 }
 
 /// Used for testing the application. Using the sample input, that it will return the correct output.
 fn sample() -> i32 {
     compute_sum("../sample.txt")
 }
+
 /// part 1 of the problem
-fn part_1() -> i32 {
-    compute_sum("../input.txt")
+fn part_1(sacks: &[(String, String)]) -> i32 {
+    compute_sum_iter(sacks).fold(0_i32, sum_chars)
 }
 
-/// This abstracts the most of the work from the
+/// Abstract the iterator, this time we return an iterator, so that it can be generically applied to
+/// either part 1 or part 2
+fn compute_sum_iter(sacks: &[(String, String)]) -> impl Iterator<Item=u8> + '_ {
+    sacks.iter()
+        .flat_map(sacks_flat_map)
+}
+/// Multiple functions are calling this to compute the final priorities, abstract this.
+fn sum_chars(acc: i32, char: u8) -> i32 {
+    acc + i32::from(char - (if char > 96 { 96 } else { 38 }))
+}
+
+
+
+/// Abstract the `flat_map` iterator, since its going to be called from multiple places
+#[allow(clippy::pattern_type_mismatch)]
+fn sacks_flat_map((first, second): &(String, String)) -> Vec<u8> {
+    let check: HashSet<&u8> = HashSet::from_iter(second.as_bytes());
+    HashSet::<&u8>::from_iter(first.as_bytes()).into_iter()
+        .filter(|char| check.contains(char))
+        .copied()
+        .collect::<Vec<u8>>()
+}
+
+
+/// This abstracts the most of the work from the functions sample and part 1
 fn compute_sum(path: &str) -> i32 {
     rucksacks(path)
-        .flat_map(|(first, second)| {
-            let check: HashSet<&u8, RandomState> = HashSet::from_iter(second.as_bytes());
-            HashSet::<&u8>::from_iter(first.as_bytes())
-                .into_iter()
-                .filter(|char| check.contains(char))
-                .map(ToOwned::to_owned)
-                .collect::<Vec<u8>>()
-        })
-        .fold(0_i32, |acc, char| {
-            acc + i32::from(char - (if char > 96 { 96 } else { 38 }))
-        })
+        .flat_map(|tuple| sacks_flat_map(&tuple))
+        .fold(0_i32, sum_chars)
 }
 
 /// Helper function to return a File Buffer. Used to isolate imperative code from the
