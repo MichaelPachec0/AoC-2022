@@ -1,7 +1,6 @@
 //! --- Day 3: Rucksack Reorganization ---
 //! This application solves Day 3 of advent of code.
 
-use std::borrow::ToOwned;
 use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -23,70 +22,59 @@ use std::io::{BufRead, BufReader};
 fn main() {
     let sample = reader("../sample.txt", None).collect::<Vec<String>>();
     let input = reader("../input.txt", None).collect::<Vec<String>>();
-    let sacks = rucksacks("../input.txt").collect::<Vec<(String, String)>>();
 
-    println!("The final score for the sample is {}", sample_answer());
-    println!("The sum of the priorities for part 1 is {}", part_1(&sacks));
-    println!("With consideration of part 2, the priorities for the sample are {}", part_2(&sample));
+    println!("The final score for the sample is {}", part_1(&sample));
+    println!("The sum of the priorities for part 1 is {}", part_1(&input));
+    println!(
+        "With consideration of part 2, the priorities for the sample are {}",
+        part_2(&sample)
+    );
     println!("And for the input text, {}", part_2(&input));
 }
 
 /// Used for testing the application. Using the sample input, that it will return the correct output.
-fn sample_answer() -> i32 {
-    compute_sum("../sample.txt")
-}
-
-/// part 1 of the problem
-fn part_1(sacks: &[(String, String)]) -> i32 {
-    compute_sum_iter(sacks).fold(0_i32, sum_chars)
+fn part_1(data: &[String]) -> i32 {
+    rucksacks(data)
+        .into_iter()
+        .flat_map(sacks_flat_map)
+        .fold(0_i32, |acc, char| sum_chars(acc, *char))
 }
 ///
 fn part_2(data: &[String]) -> i32 {
-    part_2_compute(data).into_iter()
-        .fold(0_i32, |acc, char | sum_chars(acc, *char))
+    part_2_compute(data)
+        .into_iter()
+        .fold(0_i32, |acc, char| sum_chars(acc, *char))
 }
 ///
-fn part_2_compute(data: &[String]) -> impl Iterator<Item=&u8>{
+fn part_2_compute(data: &[String]) -> impl Iterator<Item = &u8> {
     data.chunks(3)
-        .map(|chunk| chunk.iter()
-            .map(|i: &String | HashSet::<&u8>::from_iter(i.as_bytes()))
-            .collect::<Vec<HashSet<&u8>>>()
-        )
-        .flat_map(|items| items[0].iter()
-            .filter(|char| items[1].contains(**char) && items[2].contains(**char))
-            .copied()
-            .collect::<Vec<&u8>>()
-        )
+        .map(|chunk| {
+            chunk
+                .iter()
+                .map(|i: &String| HashSet::<&u8>::from_iter(i.as_bytes()))
+                .collect::<Vec<HashSet<&u8>>>()
+        })
+        .flat_map(|items| {
+            items[0]
+                .iter()
+                .filter(|char| items[1].contains(**char) && items[2].contains(**char))
+                .copied()
+                .collect::<Vec<&u8>>()
+        })
 }
 
-/// Abstract the iterator, this time we return an iterator, so that it can be generically applied to
-/// either part 1 or part 2
-fn compute_sum_iter(sacks: &[(String, String)]) -> impl Iterator<Item=u8> + '_ {
-    sacks.iter()
-        .flat_map(sacks_flat_map)
-}
 /// Multiple functions are calling this to compute the final priorities, abstract this.
-fn sum_chars(acc: i32,  char: u8) -> i32 {
+fn sum_chars(acc: i32, char: u8) -> i32 {
     acc + i32::from(char - (if char > 96 { 96 } else { 38 }))
 }
 
-
 /// Abstract the `flat_map` iterator, since its going to be called from multiple places
-#[allow(clippy::pattern_type_mismatch)]
-fn sacks_flat_map((first, second): &(String, String)) -> Vec<u8> {
+fn sacks_flat_map<'args>((first, second): (&'args str, &'args str)) -> Vec<&'args u8> {
     let check: HashSet<&u8> = HashSet::from_iter(second.as_bytes());
-    HashSet::<&u8>::from_iter(first.as_bytes()).into_iter()
+    HashSet::<&u8>::from_iter(first.as_bytes())
+        .into_iter()
         .filter(|char| check.contains(char))
-        .copied()
-        .collect::<Vec<u8>>()
-}
-
-
-/// This abstracts the most of the work from the functions sample and part 1
-fn compute_sum(path: &str) -> i32 {
-    rucksacks(path)
-        .flat_map(|tuple| sacks_flat_map(&tuple))
-        .fold(0_i32, sum_chars)
+        .collect::<Vec<&u8>>()
 }
 
 /// Helper function to return a File Buffer. Used to isolate imperative code from the
@@ -108,35 +96,19 @@ fn reader_helper(path: &str) -> BufReader<File> {
 fn reader<'args_life>(
     path: &str,
     pattern: Option<&'args_life str>,
-) -> impl Iterator<Item=String> + 'args_life {
+) -> impl Iterator<Item = String> + 'args_life {
     reader_helper(path)
         .lines()
         .into_iter()
         .map(Result::unwrap_or_default)
         // the filter below should not consume the String being passed down, instead use a reference,
         // what does need to be consumed is the pattern variable.
-
         .filter(move |line: &String| !(line.is_empty() || line.contains(pattern.unwrap_or("//"))))
 }
 
 /// Day 3 specific code, splits the string from reader into a tuple of two Strings, one denoting the
 /// first pocket in the rucksack, same with the second.
-fn rucksacks(path: &str) -> impl Iterator<Item=(String, String)> + '_ {
-    reader(path, None).into_iter().map(|line: String| {
-        // Clippy does not know better, integer arithmetic should not be able to be overflowed
-        // since we are measuring a size of something.
-        #[allow(clippy::integer_division)]
-        (
-            // Did not want to do this, but i guess i have to.
-            // Want to see if i can do Box or Rc, instead so that i dont have to do a clone.
-            line.get(..(line.len() / 2)).map_or_else(
-                || panic!("Line: {line} panicked when slicing"),
-                ToOwned::to_owned,
-            ),
-            line.get(line.len() / 2..).map_or_else(
-                || panic!("Line: {line} panicked when slicing"),
-                ToOwned::to_owned,
-            ),
-        )
-    })
+fn rucksacks(data: &[String]) -> impl Iterator<Item = (&str, &str)> {
+    data.iter()
+        .map(|sack| (&sack[..(sack.len() / 2)], &sack[(sack.len() / 2)..]))
 }
