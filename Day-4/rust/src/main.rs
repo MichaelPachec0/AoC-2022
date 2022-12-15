@@ -42,6 +42,16 @@ fn overlap_only(
     overlap_min <= check_min && check_max <= overlap_max
 }
 
+fn part_2(data: &[String]) -> i32 {
+    computation(data)
+        .filter(|(omin, omax, cmin, cmax)| overlap_all((omin, omax, cmin, cmax)))
+        .count() as i32
+}
+
+fn overlap_all((overlap_min, overlap_max, check_min, check_max): (&i32, &i32, &i32, &i32)) -> bool {
+    overlap_min.max(check_min) <= overlap_max.min(check_max)
+}
+
 /// Helper function to return a File Buffer. Used to isolate imperative code from the
 /// codebase
 fn reader_helper(path: &str) -> BufReader<File> {
