@@ -68,7 +68,7 @@ fn sum_chars(acc: i32, char: u8) -> i32 {
     acc + i32::from(char - (if char > 96 { 96 } else { 38 }))
 }
 
-/// Abstract the `flat_map` iterator, since its going to be called from multiple places
+/// Abstract the `flat_map` iterator function, since its going to be called from multiple places
 fn sacks_flat_map<'args>((first, second): (&'args str, &'args str)) -> Vec<&'args u8> {
     let check: HashSet<&u8> = HashSet::from_iter(second.as_bytes());
     HashSet::<&u8>::from_iter(first.as_bytes())
