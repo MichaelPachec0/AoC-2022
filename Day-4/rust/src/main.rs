@@ -94,3 +94,32 @@ fn assignments(data: &[String]) -> impl Iterator<Item = (&str, &str)> {
         (elves.next().unwrap(), elves.next().unwrap())
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::reader;
+
+    fn input() -> Vec<String> {
+        vec![String::from("1-1,1-1")]
+    }
+    #[test]
+    fn computation(){
+        let expect = vec![(1,1,1,1)];
+        assert_eq!(expect, super::computation(&input()).collect::<Vec<(i32,i32,i32,i32)>>())
+    }
+    #[test]
+    fn assignments(){
+        let expect = vec![("1-1", "1-1")];
+        assert_eq!(expect, super::assignments(&input()).collect::<Vec<(&str, &str)>>())
+    }
+    #[test]
+    fn sample_part_1(){
+        let expect = 2;
+        assert_eq!(expect, super::part_1(&(reader("../sample.txt", None).collect::<Vec<String>>())))
+    }
+    #[test]
+    fn input_part_1(){
+        let expect = 580;
+        assert_eq!(expect, super::part_1(&(reader("../input.txt", None).collect::<Vec<String>>())))
+    }
+}
