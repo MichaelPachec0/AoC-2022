@@ -12,6 +12,11 @@ fn main() {
         "The number of assignments that overlap in the input data is {}",
         part_1(&day_input)
     );
+    println!(
+        "With consideration for part 2 (find all overlaps), the answer for the sample is {}",
+        part_2(&sample_input)
+    );
+    println!("And for the day input it is {}", part_2(&day_input));
 }
 
 fn computation(data: &[String]) -> impl Iterator<Item = (i32, i32, i32, i32)> + '_ {
