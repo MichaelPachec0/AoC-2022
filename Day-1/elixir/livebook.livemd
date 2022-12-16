@@ -54,7 +54,7 @@ sample = Kino.Input.textarea("Please enter the sample inputs")
 
 ```elixir
 defmodule CalCalculator do
-  def calculate(input) do
+  defp calculate_helper(input) do
     input
     |> String.splitter("\n\n", trim: true)
     |> Stream.map(fn elf ->
@@ -63,19 +63,23 @@ defmodule CalCalculator do
       |> Stream.map(fn cal -> cal |> String.to_integer() end)
       |> Enum.sum()
     end)
-    |> Enum.max()
   end
+
+  def calculate_part1(input), do: input |> calculate_helper |> Enum.max()
+
+  def calculate_part2(input),
+    do: input |> calculate_helper |> Enum.sort() |> Enum.reverse() |> Enum.take(3) |> Enum.sum()
 end
 ```
 
 <!-- livebook:{"output":true} -->
 
 ```
-{:module, CalCalculator, <<70, 79, 82, 49, 0, 0, 8, ...>>, {:calculate, 1}}
+{:module, CalCalculator, <<70, 79, 82, 49, 0, 0, 9, ...>>, {:calculate_part2, 1}}
 ```
 
 ```elixir
-sample |> Kino.Input.read() |> CalCalculator.calculate()
+sample |> Kino.Input.read() |> CalCalculator.calculate_part1()
 ```
 
 <!-- livebook:{"output":true} -->
@@ -85,11 +89,21 @@ sample |> Kino.Input.read() |> CalCalculator.calculate()
 ```
 
 ```elixir
-File.read!("/data/Day-1/input.txt") |> CalCalculator.calculate()
+File.read!("/data/Day-1/input.txt") |> CalCalculator.calculate_part1()
 ```
 
 <!-- livebook:{"output":true} -->
 
 ```
 71124
+```
+
+```elixir
+File.read!("/data/Day-1/input.txt") |> CalCalculator.calculate_part2()
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+204639
 ```
