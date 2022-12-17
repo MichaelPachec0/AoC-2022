@@ -39,8 +39,8 @@ fn declarative_helper(
     input: &str,
 ) -> Result<impl Iterator<Item = i32> + '_, Box<dyn std::error::Error>> {
     Ok(input.split("\n\n").map(|elf| {
-        elf.split("\n")
-            .map(|cal| i32::from_str_radix(cal, 10).unwrap_or_default())
+        elf.split('\n')
+            .map(|cal| cal.parse::<i32>().unwrap_or_default())
             .sum()
     }))
 }
@@ -79,10 +79,10 @@ fn imperative() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn line_handler(line: String, cur: &mut i32) -> bool {
-    if line.len() != 0 {
+    if line.is_empty() {
+        true
+    } else {
         *cur += line.parse::<i32>().unwrap_or(0);
         false
-    } else {
-        true
     }
 }
