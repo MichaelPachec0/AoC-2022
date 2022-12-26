@@ -74,13 +74,11 @@ fn ins_reg_helper(str: &str) -> Result<(i32, i32, i32), Box<dyn std::error::Erro
 
 fn get_data(data: &str) -> Vec<Vec<&str>> {
     println!("{data:?}");
-    data
-        .rsplit('\n')
+    data.rsplit('\n')
         .filter(regex_helper)
         .map(|line| line_helper(line).collect::<Vec<&str>>())
         .collect::<Vec<Vec<&str>>>()
 }
-
 
 fn fmt_data(data: &str) -> (Vec<Vec<&str>>, Vec<String>) {
     let x = get_data(data);
@@ -113,7 +111,7 @@ fn line_helper(str: &str) -> impl Iterator<Item = &str> {
     lazy_static! {
         static ref REG: Regex = Regex::new(r"\s+").unwrap();
     }
-    println!("LINE_HELPER: STR: {}",str);
+    println!("LINE_HELPER: STR: {}", str);
 
     str.split(&['[', ']'])
         .map(|str| {
@@ -129,6 +127,51 @@ fn line_helper(str: &str) -> impl Iterator<Item = &str> {
                 str
             }
         })
+}
+
+fn get_data_test(data: &str) -> Vec<Vec<String>> {
+    println!("{data:?}");
+    data.rsplit('\n')
+        .filter(regex_helper)
+        .map(line_helper_test)
+        .collect::<Vec<Vec<String>>>()
+}
+
+// impl Iterator<Item = &str>
+fn line_helper_test(str: &str) -> Vec<String> {
+    lazy_static! {
+        static ref REG: Regex = Regex::new(r"\s+").unwrap();
+    }
+    println!("LINE_HELPER: STR: {:?}", str);
+    // every 4 chars, since we capture the space on every char, and also
+    let char_list = str.chars().collect::<Vec<char>>();
+    let x = char_list
+        .iter()
+        .enumerate()
+        .filter(|&(i, _)| i % 4 == 0 && i != 0)
+        .map(|(i, _)| {
+            let candidate = &char_list[i - 3];
+            println!("{candidate}");
+            // println!("HELPER: {string:?}");
+            // if REG.is_match(string.as_str()) {
+            //     ""
+            // } else {
+            //
+            // }
+            if candidate.is_alphabetic() {
+                String::from(*candidate)
+            } else {
+                String::from("")
+            }
+        })
+        .collect::<Vec<String>>();
+    println!("{x:?}");
+    x
+    // let x = (&char_list).iter().enumerate().nth(3).map(|(i, m)| {
+    //     let string = String::from_iter(&char_list[i-3..i]);
+    //     println!("{string}");
+    //     string
+    // }).collect::<Vec<String>>();
 }
 
 fn reader(path: &str) -> Result<String, Box<dyn std::error::Error>> {
@@ -161,8 +204,8 @@ fn reader(path: &str) -> Result<String, Box<dyn std::error::Error>> {
 
 #[cfg(test)]
 mod tests {
-    use lazy_static::lazy_static;
     use crate::reader;
+    use lazy_static::lazy_static;
 
     // previous, current, expected
     #[test]
@@ -192,19 +235,22 @@ mod tests {
     }
     #[test]
     fn input() -> Result<(), Box<dyn std::error::Error>> {
-        let expected:[String; 9] = ["NBDTVGZJ", "SRMDWPF", "VCRSZ", "RTJZPHG", "TCJNDZQF", "NVPWGSFM", "GCVBPQ", "ZBPN", "WPJ"].map(String::from);
+        let expected: [String; 9] = [
+            "NBDTVGZJ", "SRMDWPF", "VCRSZ", "RTJZPHG", "TCJNDZQF", "NVPWGSFM", "GCVBPQ", "ZBPN",
+            "WPJ",
+        ]
+        .map(String::from);
         let path = "../input.txt";
         let input = reader(path)?;
         let raw_data = input.split("\n\n").collect::<Vec<&str>>();
-
-        let (output,flat_output) = crate::fmt_data(raw_data[0]);
-        println!("RAWDATA:\n{:?}\nOUT:\n\n{:?}\nFLATOUT:\n\n{:?}\n{:?}", raw_data[0], output, flat_output, expected);
-        for (i, string) in expected.iter().enumerate() {
-            assert_eq!(flat_output[i], *string, "EXPECTED {:?} does not equal result {:?}", flat_output[i], *string);
-        }
-
+        let output = crate::get_data_test(raw_data[0]);
+        println!("{output:?}");
+        // let (output,flat_output) = crate::fmt_data(raw_data[0]);
+        // println!("RAWDATA:\n{:?}\nOUT:\n\n{:?}\nFLATOUT:\n\n{:?}\n{:?}", raw_data[0], output, flat_output, expected);
+        // for (i, string) in expected.iter().enumerate() {
+        //     assert_eq!(flat_output[i], *string, "EXPECTED {:?} does not equal result {:?}", flat_output[i], *string);
+        // }
 
         Ok(())
     }
-
 }
