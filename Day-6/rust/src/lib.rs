@@ -5,11 +5,7 @@ pub fn exec_pt1(input: &str) -> usize {
         if slice.iter().enumerate().all(|(i1, &char0)| {
             slice.iter().enumerate().all(|(i2, &char1)| {
                 // println!("CHECK FOR CHAR {} AT {} WITH CHAR {} AT {} {}", char0, i1, char1, i2, char0 != char1);
-                if i1 == i2 {
-                    true
-                } else {
-                    char0 != char1
-                }
+                i1 == i2 || char0 != char1
             })
         }) {
             return i0 + 4;
@@ -67,6 +63,13 @@ mod tests {
                 result, input, expected
             );
         }
+        Ok(())
+    }
+    #[test]
+    fn input() -> Result<(), Box<dyn std::error::Error>> {
+        let raw_input = reader("../input.txt")?;
+        let result = exec_pt1(raw_input.as_str());
+        println!("The result is {}", result);
         Ok(())
     }
 }
