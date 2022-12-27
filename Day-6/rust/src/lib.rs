@@ -1,19 +1,30 @@
-pub fn exec_pt1(input: &str) -> usize {
+mod structs;
+use structs::error::ComputeError;
+
+fn compute(input: &str, size: usize) -> Result<usize, Box<dyn std::error::Error>> {
     let chars = input.chars().collect::<Vec<char>>();
     for (i0, _) in chars.iter().enumerate() {
         let slice: &[char] = &chars[i0..i0 + 4];
+        // println!("CHECK FOR CHAR {} AT {} WITH CHAR {} AT {} {}", char0, i1, char1, i2, char0 != char1);
         if slice.iter().enumerate().all(|(i1, &char0)| {
-            slice.iter().enumerate().all(|(i2, &char1)| {
-                // println!("CHECK FOR CHAR {} AT {} WITH CHAR {} AT {} {}", char0, i1, char1, i2, char0 != char1);
-                i1 == i2 || char0 != char1
-            })
+            slice
+                .iter()
+                .enumerate()
+                .all(|(i2, &char1)| i1 == i2 || char0 != char1)
         }) {
-            return i0 + 4;
+            return Ok(i0 + 4);
+        } else {
+            continue;
         }
     }
-    // Something wrong happened here, there was no unique 4 characters found.
-    // TODO: should i make this a proper error? or just send 0 or 255
-    255_usize
+    Err(Box::try_from(ComputeError::new(
+        format!("No valid string slice for size {} found!", size).as_str(),
+    ))
+    .unwrap())
+}
+// impl std::error::Error
+pub fn exec_pt1(input: &str) -> Result<usize, Box<dyn std::error::Error>> {
+    compute(input, 4)
 }
 
 #[cfg(test)]
@@ -26,16 +37,17 @@ mod tests {
     }
 
     #[test]
-    fn sample_simple_pt1() {
+    fn sample_simple_pt1() -> Result<(), Box<dyn std::error::Error>> {
         let input = "mjqjpqmgbljsphdztnvjfqwrcgsmlb";
         // TODO: decide if i want to default to i32 or usize
         let expected = 7;
-        let result = exec_pt1(input);
+        let result = exec_pt1(input)?;
         assert_eq!(
             expected, result,
             "RESULT {} FOR INPUT {} DOES NOT EQUAL EXPECTED {}",
             result, input, expected
         );
+        Ok(())
     }
     #[test]
     fn sample_pt1() -> Result<(), Box<dyn std::error::Error>> {
@@ -56,7 +68,7 @@ mod tests {
             .collect::<Vec<(&str, usize)>>();
         for (i, &(input, expected)) in input.iter().enumerate() {
             println!("TEST {} of {} : STRING: {}", i, line_input.len() - 1, input);
-            let result = exec_pt1(input);
+            let result = exec_pt1(input)?;
             assert_eq!(
                 expected, result,
                 "RESULT {} FOR INPUT {} DOES NOT EQUAL EXPECTED {}",
@@ -68,7 +80,7 @@ mod tests {
     #[test]
     fn input() -> Result<(), Box<dyn std::error::Error>> {
         let raw_input = reader("../input.txt")?;
-        let result = exec_pt1(raw_input.as_str());
+        let result = exec_pt1(raw_input.as_str())?;
         println!("The result is {}", result);
         Ok(())
     }
