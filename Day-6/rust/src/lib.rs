@@ -3,8 +3,10 @@ use structs::error::ComputeError;
 
 fn compute(input: &str, size: usize) -> Result<usize, Box<dyn std::error::Error>> {
     let chars = input.chars().collect::<Vec<char>>();
-    for (i0, _) in chars.iter().enumerate() {
-        let slice: &[char] = &chars[i0..i0 + 4];
+    // The compiler is not smart enough to infer here, so we need to define types for closures
+    let guard = |&(i, _): &(usize, &char)| i + size <= chars.len();
+    for (i0, _) in chars.iter().enumerate().filter(guard) {
+        let slice: &[char] = &chars[i0..i0 + size];
         // println!("CHECK FOR CHAR {} AT {} WITH CHAR {} AT {} {}", char0, i1, char1, i2, char0 != char1);
         if slice.iter().enumerate().all(|(i1, &char0)| {
             slice
