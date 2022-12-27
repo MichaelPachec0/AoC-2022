@@ -78,6 +78,33 @@ mod tests {
         Ok(())
     }
     #[test]
+    fn sample_end_line_check() -> Result<(), Box<dyn std::error::Error>> {
+        let input = "mjqjjjjjjjjjjjjjjjjjjjjpqm";
+        let expected = input.len();
+        let result = exec_pt1(input)?;
+        assert_eq!(
+            expected, result,
+            "RESULT {} FOR INPUT {} DOES NOT EQUAL EXPECTED {}",
+            result, input, expected
+        );
+        Ok(())
+    }
+    #[test]
+    fn sample_test_error() -> Result<(), Box<dyn std::error::Error>> {
+        let input = "mjqjjjjjjjjjjjjjjjjjjjjjj";
+        let expected_err =
+            "Err(ComputeError { details: \"No valid string slice for size 4 found!\" })";
+        let result = exec_pt1(input);
+        let error_str = format!("{:?}", result);
+        assert!(
+            result.is_err() && expected_err == error_str,
+            "INPUT {} should have errored. Instead got {:?}.",
+            input,
+            error_str
+        );
+        Ok(())
+    }
+    #[test]
     fn input() -> Result<(), Box<dyn std::error::Error>> {
         let raw_input = reader("../input.txt")?;
         let result = exec_pt1(raw_input.as_str())?;
