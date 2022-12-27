@@ -21,8 +21,7 @@ fn compute(input: &str, size: usize) -> Result<usize, Box<dyn std::error::Error>
     }
     Err(Box::try_from(ComputeError::new(
         format!("No valid string slice for size {} found!", size).as_str(),
-    ))
-    .unwrap())
+    ))?)
 }
 // impl std::error::Error
 pub fn exec_pt1(input: &str) -> Result<usize, Box<dyn std::error::Error>> {
