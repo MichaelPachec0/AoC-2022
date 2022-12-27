@@ -15,17 +15,20 @@ fn compute(input: &str, size: usize) -> Result<usize, Box<dyn std::error::Error>
                 .all(|(i2, &char1)| i1 == i2 || char0 != char1)
         }) {
             return Ok(i0 + size);
-        } else {
-            continue;
         }
+        continue;
     }
     Err(Box::try_from(ComputeError::new(
         format!("No valid string slice for size {} found!", size).as_str(),
     ))?)
 }
-// impl std::error::Error
+
 pub fn exec_pt1(input: &str) -> Result<usize, Box<dyn std::error::Error>> {
     compute(input, 4)
+}
+
+pub fn exec_pt2(input: &str) -> Result<usize, Box<dyn std::error::Error>> {
+    compute(input, 14)
 }
 
 #[cfg(test)]
@@ -47,6 +50,23 @@ mod tests {
                 )
             })
     }
+
+    fn sample_check<F>(lines: &[(&str, usize)], func: F) -> Result<(), Box<dyn std::error::Error>>
+    where
+        F: Fn(&str) -> Result<usize, Box<dyn std::error::Error>>,
+    {
+        for (i, &(input, expected)) in lines.iter().enumerate() {
+            println!("TEST {} of {} : STRING: {}", i, lines.len() - 1, input);
+            let result = func(input)?;
+            assert_eq!(
+                expected, result,
+                "RESULT {} FOR INPUT {} DOES NOT EQUAL EXPECTED {}",
+                result, input, expected
+            );
+        }
+        Ok(())
+    }
+
     #[test]
     fn sample_simple_pt1() -> Result<(), Box<dyn std::error::Error>> {
         let input = "mjqjpqmgbljsphdztnvjfqwrcgsmlb";
@@ -64,15 +84,7 @@ mod tests {
     fn sample_pt1() -> Result<(), Box<dyn std::error::Error>> {
         let raw_input = reader("../sample.txt")?;
         let lines = get_input(raw_input.as_ref()).collect::<Vec<(&str, usize)>>();
-        for (i, &(input, expected)) in lines.iter().enumerate() {
-            println!("TEST {} of {} : STRING: {}", i, lines.len() - 1, input);
-            let result = exec_pt1(input)?;
-            assert_eq!(
-                expected, result,
-                "RESULT {} FOR INPUT {} DOES NOT EQUAL EXPECTED {}",
-                result, input, expected
-            );
-        }
+        sample_check(&lines, exec_pt1)?;
         Ok(())
     }
     #[test]
@@ -106,6 +118,20 @@ mod tests {
     fn input_pt1() -> Result<(), Box<dyn std::error::Error>> {
         let raw_input = reader("../input.txt")?;
         let result = exec_pt1(raw_input.as_str())?;
+        println!("The result is {}", result);
+        Ok(())
+    }
+    #[test]
+    fn sample_pt2() -> Result<(), Box<dyn std::error::Error>> {
+        let raw_input = reader("../sample_pt2.txt")?;
+        let lines = get_input(raw_input.as_ref()).collect::<Vec<(&str, usize)>>();
+        sample_check(&lines, exec_pt2)?;
+        Ok(())
+    }
+    #[test]
+    fn input_pt2() -> Result<(), Box<dyn std::error::Error>> {
+        let raw_input = reader("../input.txt")?;
+        let result = exec_pt2(raw_input.as_ref())?;
         println!("The result is {}", result);
         Ok(())
     }
