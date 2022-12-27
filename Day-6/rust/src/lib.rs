@@ -14,7 +14,7 @@ fn compute(input: &str, size: usize) -> Result<usize, Box<dyn std::error::Error>
                 .enumerate()
                 .all(|(i2, &char1)| i1 == i2 || char0 != char1)
         }) {
-            return Ok(i0 + 4);
+            return Ok(i0 + size);
         } else {
             continue;
         }
