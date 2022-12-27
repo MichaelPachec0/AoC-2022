@@ -1,5 +1,5 @@
 mod structs;
-use structs::error::ComputeError;
+use structs::error::ComputeErr;
 
 fn compute(input: &str, size: usize) -> Result<usize, Box<dyn std::error::Error>> {
     let chars = input.chars().collect::<Vec<char>>();
@@ -18,15 +18,22 @@ fn compute(input: &str, size: usize) -> Result<usize, Box<dyn std::error::Error>
         }
         continue;
     }
-    Err(Box::try_from(ComputeError::new(
-        format!("No valid string slice for size {} found!", size).as_str(),
+    Err(Box::try_from(ComputeErr::new(
+        format!("No valid string slice for size {size} found!").as_str(),
     ))?)
 }
 
+/// # Errors
+///
+/// Will return an `Err` if there is not a valid slice with the constrains given in the `size` parameter
+/// given. In this case it is 4 chars.
 pub fn exec_pt1(input: &str) -> Result<usize, Box<dyn std::error::Error>> {
     compute(input, 4)
 }
-
+/// # Errors
+///
+/// Will return an `Err` if there is not a valid slice with the constrains given in the `size` parameter
+/// given. In this case it is 14 chars.
 pub fn exec_pt2(input: &str) -> Result<usize, Box<dyn std::error::Error>> {
     compute(input, 14)
 }
@@ -56,7 +63,7 @@ mod tests {
         F: Fn(&str) -> Result<usize, Box<dyn std::error::Error>>,
     {
         for (i, &(input, expected)) in lines.iter().enumerate() {
-            println!("TEST {} of {} : STRING: {}", i, lines.len() - 1, input);
+            println!("TEST {i} of {} : STRING: {input}", lines.len() - 1);
             let result = func(input)?;
             assert_eq!(
                 expected, result,
@@ -100,25 +107,24 @@ mod tests {
         Ok(())
     }
     #[test]
-    fn sample_test_error() -> Result<(), Box<dyn std::error::Error>> {
+    fn sample_test_error() {
         let input = "mjqjjjjjjjjjjjjjjjjjjjjjj";
         let expected_err =
             "Err(ComputeError { details: \"No valid string slice for size 4 found!\" })";
         let result = exec_pt1(input);
-        let error_str = format!("{:?}", result);
+        let error_str = format!("{result:?}");
         assert!(
             result.is_err() && expected_err == error_str,
             "INPUT {} should have errored. Instead got {:?}.",
             input,
             error_str
         );
-        Ok(())
     }
     #[test]
     fn input_pt1() -> Result<(), Box<dyn std::error::Error>> {
         let raw_input = reader("../input.txt")?;
         let result = exec_pt1(raw_input.as_str())?;
-        println!("The result is {}", result);
+        println!("The result is {result}");
         Ok(())
     }
     #[test]
@@ -132,7 +138,7 @@ mod tests {
     fn input_pt2() -> Result<(), Box<dyn std::error::Error>> {
         let raw_input = reader("../input.txt")?;
         let result = exec_pt2(raw_input.as_ref())?;
-        println!("The result is {}", result);
+        println!("The result is {result}");
         Ok(())
     }
 }

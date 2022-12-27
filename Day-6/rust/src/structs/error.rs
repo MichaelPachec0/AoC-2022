@@ -4,23 +4,23 @@ use std::{
 };
 
 #[derive(Debug)]
-pub struct ComputeError {
+pub struct ComputeErr {
     details: String,
 }
 
-impl Display for ComputeError {
+impl Display for ComputeErr {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "{}", self.details)
     }
 }
 
-impl Error for ComputeError {
+impl Error for ComputeErr {
     fn description(&self) -> &str {
         &self.details
     }
 }
 
-impl ComputeError {
+impl ComputeErr {
     pub fn new(details: &str) -> Self {
         Self {
             details: details.to_string(),
