@@ -36,7 +36,17 @@ mod tests {
     fn reader(path: &str) -> Result<String, Box<dyn std::error::Error>> {
         Ok(fs::read_to_string(path)?.parse()?)
     }
-
+    fn get_input(raw: &str) -> impl Iterator<Item = (&str, usize)> {
+        raw.split('\n')
+            .filter(|&line| !line.is_empty())
+            .map(|line| {
+                let mut tmp = line.split(' ');
+                (
+                    tmp.next().unwrap(),
+                    tmp.next().unwrap_or("0").parse::<usize>().unwrap(),
+                )
+            })
+    }
     #[test]
     fn sample_simple_pt1() -> Result<(), Box<dyn std::error::Error>> {
         let input = "mjqjpqmgbljsphdztnvjfqwrcgsmlb";
@@ -53,22 +63,9 @@ mod tests {
     #[test]
     fn sample_pt1() -> Result<(), Box<dyn std::error::Error>> {
         let raw_input = reader("../sample.txt")?;
-        let line_input = raw_input
-            .split('\n')
-            .filter(|&line| !line.is_empty())
-            .collect::<Vec<&str>>();
-        let input = line_input
-            .iter()
-            .map(|line| {
-                let mut tmp = line.split(' ');
-                (
-                    tmp.next().unwrap(),
-                    tmp.next().unwrap_or("0").parse::<usize>().unwrap(),
-                )
-            })
-            .collect::<Vec<(&str, usize)>>();
-        for (i, &(input, expected)) in input.iter().enumerate() {
-            println!("TEST {} of {} : STRING: {}", i, line_input.len() - 1, input);
+        let lines = get_input(raw_input.as_ref()).collect::<Vec<(&str, usize)>>();
+        for (i, &(input, expected)) in lines.iter().enumerate() {
+            println!("TEST {} of {} : STRING: {}", i, lines.len() - 1, input);
             let result = exec_pt1(input)?;
             assert_eq!(
                 expected, result,
@@ -106,7 +103,7 @@ mod tests {
         Ok(())
     }
     #[test]
-    fn input() -> Result<(), Box<dyn std::error::Error>> {
+    fn input_pt1() -> Result<(), Box<dyn std::error::Error>> {
         let raw_input = reader("../input.txt")?;
         let result = exec_pt1(raw_input.as_str())?;
         println!("The result is {}", result);
