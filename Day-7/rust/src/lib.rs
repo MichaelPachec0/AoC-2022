@@ -25,7 +25,18 @@
 // }
 const SPACE_TAB: usize = 4;
 
+enum CommandLine<'a> {
+    File(File<'a>),
+    Folder(Folder<'a>),
+    Command(Command<'a>),
+}
 
+struct Command<'a> {
+    raw_string: &'a str,
+    command_type: &'a str,
+    location: &'a str,
+    arguments: Vec<&'a str>,
+}
 
 struct File<'a> {
     filename: &'a str,
@@ -35,20 +46,16 @@ struct File<'a> {
 impl<'a> File<'a> {
     pub fn new(filename: &'a str, size: &'a str) -> Self {
         let size = size.parse::<usize>().unwrap();
-        Self {
-            filename,
-            size
-        }
+        Self { filename, size }
     }
 }
-
 
 struct Folder<'a> {
     name: &'a str,
     size: Option<usize>,
-    file_list: Vec<File<'a>>,
+    file_list: Vec<&'a File<'a>>,
     folders_matching: Vec<(&'a str, usize)>,
-    folder_list: Vec<Folder<'a>>
+    folder_list: Vec<&'a mut Folder<'a>>,
 }
 
 impl<'a> Folder<'a> {
@@ -61,7 +68,7 @@ impl<'a> Folder<'a> {
             folder_list: vec![],
         }
     }
-    pub fn compute_size(&mut self, level: Option<usize>)-> (Option<usize>, &[(&'a str, usize)]) {
+    pub fn compute_size(&mut self, level: Option<usize>) -> (Option<usize>, &[(&'a str, usize)]) {
         let tab = " ".repeat(SPACE_TAB);
         let level = level.unwrap_or(0);
         let folder_len = self.folder_list.len();
@@ -69,16 +76,19 @@ impl<'a> Folder<'a> {
         // let tabs = (0..level).map(|_| "\t").collect::<Vec<&str>>().join("");
         // let tabs = "\t".repeat(level);
         let tabs = tab.repeat(level);
-        for (i, file) in self.file_list.iter().enumerate(){
-            println!("{tabs}{tab}LEVEL: {level} FILE {i} of {file_len} FILE {} WITH SIZE OF {}", file.filename, file.size);
+        for (i, file) in self.file_list.iter().enumerate() {
+            println!(
+                "{tabs}{tab}LEVEL: {level} FILE {i} of {file_len} FILE {} WITH SIZE OF {}",
+                file.filename, file.size
+            );
             self.size = Some(self.size.unwrap_or(0) + file.size);
         }
         for (i, folder) in self.folder_list.iter_mut().enumerate() {
             println!("{tabs}LEVEL: {level} FOLDER {i} of {folder_len} OPENING FOLDER {} INSIDE OF FOLDER {}", folder.name, self.name);
-            let (folder_size, folders) = folder.compute_size(Some(level+1));
+            let (folder_size, folders) = folder.compute_size(Some(level + 1));
             self.size = Some(self.size.unwrap_or(0) + folder_size.unwrap_or(0));
             for &subfolder in folders.iter() {
-                self.folders_matching.push(subfolder)
+                self.folders_matching.push(subfolder);
             }
             // folders.iter().for_each(|&folder| self.folders_matching.push(folder));
         }
@@ -86,19 +96,32 @@ impl<'a> Folder<'a> {
     }
 }
 
-struct DirectoryBrowser<'a>{
+struct DirectoryBrowser<'a> {
     raw_string: &'a str,
     // This will have directories minus the root
-    directories: Vec<Folder<'a>>,
+    directories: Vec<&'a Folder<'a>>,
     dir_stack: Vec<&'a Folder<'a>>,
+    command_stream: Vec<CommandLine<'a>>,
 }
 
 impl<'a> DirectoryBrowser<'a> {
     pub fn new(raw_string: &'a str) -> Self {
         Self {
             raw_string,
-            directories: Vec::new(),
-            dir_stack: Vec::new(),
+            directories: vec![],
+            dir_stack: vec![],
+            command_stream: vec![],
+        }
+    }
+    pub fn parse(&mut self) {
+        for line in self.raw_string.split('\n') {
+            match line.chars().next() {
+                Some('$') => {
+                    // Command
+                }
+                Some(_) => {}
+                None => {}
+            }
         }
     }
 }
@@ -112,11 +135,9 @@ mod tests {
         Ok(fs::read_to_string(path)?.parse()?)
     }
 
-
     #[test]
     fn test_dir_stack() {
         let input = "$ cd /\n$ ls\ndir a\ndir b\n$ cd a\n".to_string();
-
     }
 
     #[test]
