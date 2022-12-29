@@ -23,6 +23,9 @@
 //             }
 //         })
 // }
+const SPACE_TAB: usize = 4;
+
+
 
 struct File<'a> {
     filename: &'a str,
@@ -44,6 +47,8 @@ struct Folder<'a> {
     name: &'a str,
     size: Option<usize>,
     file_list: Vec<File<'a>>,
+    folders_matching: Vec<(&'a str, usize)>,
+    folder_list: Vec<Folder<'a>>
 }
 
 impl<'a> Folder<'a> {
@@ -51,8 +56,33 @@ impl<'a> Folder<'a> {
         Self {
             name,
             size: None,
-            file_list: Vec::new(),
+            file_list: vec![],
+            folders_matching: vec![],
+            folder_list: vec![],
         }
+    }
+    pub fn compute_size(&mut self, level: Option<usize>)-> (Option<usize>, &[(&'a str, usize)]) {
+        let tab = " ".repeat(SPACE_TAB);
+        let level = level.unwrap_or(0);
+        let folder_len = self.folder_list.len();
+        let file_len = self.file_list.len();
+        // let tabs = (0..level).map(|_| "\t").collect::<Vec<&str>>().join("");
+        // let tabs = "\t".repeat(level);
+        let tabs = tab.repeat(level);
+        for (i, file) in self.file_list.iter().enumerate(){
+            println!("{tabs}{tab}LEVEL: {level} FILE {i} of {file_len} FILE {} WITH SIZE OF {}", file.filename, file.size);
+            self.size = Some(self.size.unwrap_or(0) + file.size);
+        }
+        for (i, folder) in self.folder_list.iter_mut().enumerate() {
+            println!("{tabs}LEVEL: {level} FOLDER {i} of {folder_len} OPENING FOLDER {} INSIDE OF FOLDER {}", folder.name, self.name);
+            let (folder_size, folders) = folder.compute_size(Some(level+1));
+            self.size = Some(self.size.unwrap_or(0) + folder_size.unwrap_or(0));
+            for &subfolder in folders.iter() {
+                self.folders_matching.push(subfolder)
+            }
+            // folders.iter().for_each(|&folder| self.folders_matching.push(folder));
+        }
+        (self.size, &self.folders_matching)
     }
 }
 
