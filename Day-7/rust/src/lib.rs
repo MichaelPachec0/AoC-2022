@@ -12,6 +12,8 @@
 //
 // Root directory will Always be /
 
+use std::borrow::BorrowMut;
+
 // fn stack(stream: &str) -> &str {
 //     stream.split('\n')
 //         .filter(|&line| line.starts_with('$'))
@@ -31,12 +33,30 @@ enum CommandLine<'a> {
     Command(Command<'a>),
 }
 
+enum Type<'a> {
+    File(usize),
+    Folder(&'a str)
+}
+
 struct Command<'a> {
     raw_string: &'a str,
+    // ls, cd, ect
     command_type: &'a str,
     location: &'a str,
     arguments: Vec<&'a str>,
 }
+
+impl<'a> Command<'a> {
+    fn new(raw_string: &'a str, command_type: &'a str, location: &'a str, arguments: Vec<&'a str>) -> Self {
+        Self {
+            raw_string,
+            command_type,
+            location,
+            arguments,
+        }
+    }
+}
+
 
 struct File<'a> {
     filename: &'a str,
@@ -53,9 +73,8 @@ impl<'a> File<'a> {
 struct Folder<'a> {
     name: &'a str,
     size: Option<usize>,
-    file_list: Vec<&'a File<'a>>,
-    folders_matching: Vec<(&'a str, usize)>,
-    folder_list: Vec<&'a mut Folder<'a>>,
+    start: usize,
+    stop: usize,
 }
 
 impl<'a> Folder<'a> {
@@ -63,66 +82,144 @@ impl<'a> Folder<'a> {
         Self {
             name,
             size: None,
-            file_list: vec![],
-            folders_matching: vec![],
-            folder_list: vec![],
+            start: 0,
+            stop: 0,
         }
     }
-    pub fn compute_size(&mut self, level: Option<usize>) -> (Option<usize>, &[(&'a str, usize)]) {
-        let tab = " ".repeat(SPACE_TAB);
-        let level = level.unwrap_or(0);
-        let folder_len = self.folder_list.len();
-        let file_len = self.file_list.len();
-        // let tabs = (0..level).map(|_| "\t").collect::<Vec<&str>>().join("");
-        // let tabs = "\t".repeat(level);
-        let tabs = tab.repeat(level);
-        for (i, file) in self.file_list.iter().enumerate() {
-            println!(
-                "{tabs}{tab}LEVEL: {level} FILE {i} of {file_len} FILE {} WITH SIZE OF {}",
-                file.filename, file.size
-            );
-            self.size = Some(self.size.unwrap_or(0) + file.size);
-        }
-        for (i, folder) in self.folder_list.iter_mut().enumerate() {
-            println!("{tabs}LEVEL: {level} FOLDER {i} of {folder_len} OPENING FOLDER {} INSIDE OF FOLDER {}", folder.name, self.name);
-            let (folder_size, folders) = folder.compute_size(Some(level + 1));
-            self.size = Some(self.size.unwrap_or(0) + folder_size.unwrap_or(0));
-            for &subfolder in folders.iter() {
-                self.folders_matching.push(subfolder);
-            }
-            // folders.iter().for_each(|&folder| self.folders_matching.push(folder));
-        }
-        (self.size, &self.folders_matching)
-    }
+    // pub fn compute_size(&mut self, level: Option<usize>, commands: &mut [CommandLine<'_>]) -> (Option<usize>, &[(&'a str, usize)]) {
+        // let tab = " ".repeat(SPACE_TAB);
+        // let level = level.unwrap_or(0);
+        // let file_len = self.nested_files.len();
+        // let tabs = tab.repeat(level);
+        // for (i, &file_ref) in self.nested_files.iter().enumerate() {
+        //     match commands[file_ref] {
+        //         CommandLine::File(file) => {
+        //             let (name, size) = (file.filename, file.size);
+        //             println!("{tabs}{tab}LEVEL: {level}: FILE {i} of {file_len} FILE {name} WITH SIZE OF {size}");
+        //             self.size = Some(self.size.unwrap_or(0) + size)
+        //         }
+        //         CommandLine::Folder(ref mut folder) => {
+        //             let name = folder.name;
+        //             let (fsize, folders) = folder.compute_size(Some(level+1), commands);
+        //             println!("{tabs}LEVEL: {level} FOLDER {i} of {file_len} FOLDER NAME {name}");
+        //             self.size = Some(self.size.unwrap_or(0) + fsize.unwrap_or(0));
+        //             for &sub_folder in folders.iter() {
+        //                 self.folders_matching.push(sub_folder);
+        //             }
+        //         }
+        //         _ => {}
+        //     }
+        // }
+        // (self.size, &self.folders_matching)
+        // for (i, file) in self.file_list.iter().enumerate() {
+        //     let (filename, fsize) = match &commands[*file] {
+        //         CommandLine::File(file) => (file.filename, file.size),
+        //         _ => {("", 0)}
+        //     };
+        //     println!(
+        //         "{tabs}{tab}LEVEL: {level} FILE {i} of {file_len} FILE {filename} WITH SIZE OF {fsize}"
+        //     );
+        //     self.size = Some(self.size.unwrap_or(0) + fsize);
+        // }
+        // for (i, folder) in self.folder_list.iter_mut().enumerate() {
+        //     println!("{tabs}LEVEL: {level} FOLDER {i} of {folder_len} OPENING FOLDER {} INSIDE OF FOLDER {}", folder.name, self.name);
+        //     let (folder_size, folders) = folder.compute_size(Some(level + 1));
+        //     self.size = Some(self.size.unwrap_or(0) + folder_size.unwrap_or(0));
+        //     for &subfolder in folders.iter() {
+        //         self.folders_matching.push(subfolder);
+        //     }
+        //     // folders.iter().for_each(|&folder| self.folders_matching.push(folder));
+        // }
+        // (self.size, &self.folders_matching)
+    // }
 }
 
 struct DirectoryBrowser<'a> {
     raw_string: &'a str,
     // This will have directories minus the root
-    directories: Vec<&'a Folder<'a>>,
+    directories_matching: Vec<usize>,
+    // Where we will be in current directory
     dir_stack: Vec<&'a Folder<'a>>,
+    // Parseable stream of commands (and their outputs)
     command_stream: Vec<CommandLine<'a>>,
+    root_size: usize,
+    // TODO: need to think about if root folder should own the struct of if we can get away with a
+    //  ref (or mut ref) and have command stream own everything
+    root_folder: Folder<'a>,
+    files: Vec<&'a File<'a>>,
 }
 
 impl<'a> DirectoryBrowser<'a> {
     pub fn new(raw_string: &'a str) -> Self {
         Self {
             raw_string,
-            directories: vec![],
+            directories_matching: vec![],
             dir_stack: vec![],
             command_stream: vec![],
+            root_size: 0,
+            root_folder: Folder {
+                name: "",
+                size: None,
+                start: 0,
+                stop: 0,
+            },
+            files: vec![],
         }
     }
     pub fn parse(&mut self) {
         for line in self.raw_string.split('\n') {
             match line.chars().next() {
                 Some('$') => {
-                    // Command
+                    let mut command_chunked = line.split(' ').skip(0);
+                    let command = command_chunked.next().unwrap_or("");
+                    let arguments = command_chunked.collect::<Vec<&str>>();
+                    self.command_stream.push(
+                        CommandLine::Command(
+                            Command::new(line, command, "", arguments)
+                        )
+                    );
                 }
-                Some(_) => {}
+                Some(_) => {
+                    // file list
+                    let mut file_chunks = line.split(' ');
+                    let file = match file_chunks.next() {
+                        Some(str) => {
+                            match str.parse::<usize>() {
+                                Ok(size) => {
+                                    (Type::File(size), file_chunks.next().unwrap_or_default())
+                                }
+                                Err(_) => {
+                                    (Type::Folder(str), file_chunks.next().unwrap_or_default())
+                                }
+                            }
+                        }
+                        _ => {
+                            // WARN: We should never end up here, this is to make rust happy.
+                            (Type::Folder(""), "")
+                        }
+                    };
+                }
                 None => {}
             }
         }
+    }
+    pub fn compute(&mut self) {
+        // for (i0, command) in self.command_stream.iter_mut().enumerate() {
+        //     match command {
+        //         CommandLine::Folder(folder) => {
+        //             for (i1, &file) in folder.nested_files.iter().enumerate() {
+        //
+        //             }
+        //         }
+        //         // TODO: See if its possible to disable mutability in these last two references
+        //         // This does not need to mutable, we arent going to do anything with the struct
+        //         CommandLine::File(file) => {
+        //
+        //         }
+        //         // This also does not need to mutable, but we mutability by default
+        //         CommandLine::Command(command) => {}
+        //     }
+        // }
     }
 }
 
