@@ -138,6 +138,7 @@ impl<'a> DirectoryBrowser<'a> {
                         // pop the last directory
                         if !location.is_root() {
                             location.pop_dir();
+                            println!("Hello World");
                         }
                     }
                     "/" => {
